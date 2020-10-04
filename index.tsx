@@ -5,7 +5,7 @@ import { Rules } from "./rules";
 import { Records } from "./records";
 import { TransferRules } from "./transferRules";
 import { Button } from "./components/button";
-import { VerticalLayout } from "./components/verticalLayout";
+import { HeaderWithContent } from "./components/headerWithContent";
 import { LocalStorage } from "./storage";
 import { Settings } from "./settings";
 
@@ -16,7 +16,7 @@ b.injectCss("html, body { height: 100%; margin:0 }");
 
 function main(data: b.IRouteHandlerData) {
   return (
-    <VerticalLayout>
+    <HeaderWithContent>
       <>
         <Button text={"Prohlizeni"} route="showcase" />
         <Button text={"Zaznamy"} route="records" />
@@ -25,7 +25,7 @@ function main(data: b.IRouteHandlerData) {
         <Button text={"Nastaveni"} route="settings" />
       </>
       <>{data.activeRouteHandler()}</>
-    </VerticalLayout>
+    </HeaderWithContent>
   );
 }
 

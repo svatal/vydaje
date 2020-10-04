@@ -4,7 +4,7 @@ import { Table } from "./components/table";
 import { basketToString } from "./util";
 import { INormalizedRule } from "./model/rule";
 import { Records } from "./records";
-import { VerticalLayout } from "./components/verticalLayout";
+import { HeaderWithContent } from "./components/headerWithContent";
 import { Button } from "./components/button";
 import { ContextMenu } from "./components/contextMenu";
 
@@ -57,7 +57,7 @@ export function Rules() {
       </div>
       <div style={{ overflowY: "auto" }}>
         {selectedRule && (
-          <VerticalLayout>
+          <HeaderWithContent>
             <>
               <Button
                 text={"Vitez"}
@@ -82,7 +82,7 @@ export function Rules() {
                   .map((r) => r.record)}
               />
             }
-          </VerticalLayout>
+          </HeaderWithContent>
         )}
       </div>
       {contextMenu && (

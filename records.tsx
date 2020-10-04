@@ -3,7 +3,7 @@ import { model } from "./model/model";
 import { IRecord } from "./model/record";
 import { Table } from "./components/table";
 import { basketToString } from "./util";
-import { VerticalLayout } from "./components/verticalLayout";
+import { HeaderWithContent } from "./components/headerWithContent";
 import { Button } from "./components/button";
 import { getTx } from "./model/rule";
 import { formatDate } from "./util";
@@ -38,7 +38,7 @@ export function Records(p?: {
   const hideBasketColumn = !!p?.hideBasketColumn;
   return (
     <>
-      <VerticalLayout>
+      <HeaderWithContent>
         {p?.records ? (
           <></>
         ) : (
@@ -99,7 +99,7 @@ export function Records(p?: {
             ],
           }))}
         />
-      </VerticalLayout>
+      </HeaderWithContent>
       {contextMenu && (
         <ContextMenu
           pos={contextMenu.pos}

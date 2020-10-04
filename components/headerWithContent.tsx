@@ -1,6 +1,6 @@
 import * as b from "bobril";
 
-export function VerticalLayout(p: {
+export function HeaderWithContent(p: {
   // topContent: b.IBobrilChildren;
   // children: b.IBobrilChildren;
   children: [b.IBobrilNode, b.IBobrilNode];
