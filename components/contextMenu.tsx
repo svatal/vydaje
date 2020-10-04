@@ -32,6 +32,7 @@ export function ContextMenu(p: {
           width: 300,
           height: p.rows.length * 20,
           background: "white",
+          padding: 10,
         }}
       >
         {p.rows.map((r) => (

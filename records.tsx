@@ -30,12 +30,10 @@ export function Records(p?: {
     { name: string; tx: string } | undefined
   >(undefined);
 
-  console.log("records render", p?.records?.length);
-
   const allRecords =
     p?.records ?? model.records.filter(getFilter(filter, searchString));
   const records = allRecords.slice(0, 200);
-  const hideBasketColumn = !!p?.hideBasketColumn;
+  const hideBasketColumn = !!p?.hideBasketColumn || filter === Filter.NoRule;
   return (
     <>
       <HeaderWithContent>
@@ -83,6 +81,7 @@ export function Records(p?: {
           ]}
           data={records.map((r) => ({
             onContextMenu: (pos) => setContextMenu({ pos, record: r }),
+            isSelected: r === contextMenu?.record || getTx(r) === txBasket?.tx,
             columns: [
               `${r.targetAccount}/${r.targetBank}`,
               formatDate(r.date),
@@ -132,6 +131,12 @@ export function Records(p?: {
                 tx: txBasket.tx,
               });
               model.store();
+              setTxBasket(undefined);
+            }}
+          />
+          <Button
+            text="Cancel"
+            onClick={() => {
               setTxBasket(undefined);
             }}
           />
