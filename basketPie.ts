@@ -3,7 +3,7 @@ import * as rule from "./model/rule";
 import { getColor, formatCurrency } from "./util";
 
 export function renderBasket(
-  basket: rule.IBasket,
+  basket: rule.IBasketWithRecords,
   index: number,
   path: string[],
   updatePathComponent: (name: string, index: number) => b.IBobrilComponent,
@@ -42,7 +42,7 @@ export function renderBasket(
 }
 
 function pie(
-  baskets: { [basket: string]: rule.IBasket },
+  baskets: { [basket: string]: rule.IBasketWithRecords },
   index: number,
   colors: string[],
   updatePathComponent: (name: string, index: number) => b.IBobrilComponent,
@@ -86,10 +86,10 @@ function pie(
   ];
 }
 
-export function getMalus(basket: rule.IBasket) {
+export function getMalus(basket: rule.IBasketWithRecords) {
   return -Math.min(0, basket.plus + basket.minus);
 }
 
-function getBalance(basket: rule.IBasket) {
+function getBalance(basket: rule.IBasketWithRecords) {
   return basket.plus + basket.minus;
 }

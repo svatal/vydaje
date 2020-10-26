@@ -1,10 +1,10 @@
 import * as b from "bobril";
-import { IBasket } from "./model/rule";
+import { IBasketWithRecords } from "./model/rule";
 import { getColor, formatCurrency } from "./util";
 
 export function renderTimeGraph(
-  allbaskets: IBasket,
-  timeBaskets: { [id: string]: IBasket },
+  allbaskets: IBasketWithRecords,
+  timeBaskets: { [id: string]: IBasketWithRecords },
   path: string[]
 ) {
   allbaskets = getBasket(path, allbaskets);
@@ -12,7 +12,7 @@ export function renderTimeGraph(
   timeBaskets = ids.reduce((c, y) => {
     c[y] = getBasket(path, timeBaskets[y]);
     return c;
-  }, {} as { [id: string]: IBasket });
+  }, {} as { [id: string]: IBasketWithRecords });
   const names = Object.keys(allbaskets.baskets).sort(
     (a, b) =>
       getBalance(allbaskets.baskets[a]) - getBalance(allbaskets.baskets[b])
@@ -66,7 +66,7 @@ export function renderTimeGraph(
   );
 }
 
-function getBasket(path: string[], root: IBasket): IBasket {
+function getBasket(path: string[], root: IBasketWithRecords): IBasketWithRecords {
   if (path.length === 0) return root;
   const basket = root.baskets[path[0]];
   if (basket === undefined)
@@ -74,11 +74,11 @@ function getBasket(path: string[], root: IBasket): IBasket {
   return getBasket(path.slice(1), basket);
 }
 
-function getBalance(basket: IBasket | undefined) {
+function getBalance(basket: IBasketWithRecords | undefined) {
   if (!basket) return 0;
   return basket.plus + basket.minus;
 }
-function getMalus(basket: IBasket | undefined) {
+function getMalus(basket: IBasketWithRecords | undefined) {
   return Math.max(0, -getBalance(basket));
 }
 

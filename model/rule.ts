@@ -11,14 +11,14 @@ export interface INormalizedRule {
   bskt: string[] | null;
 }
 
-export interface IBasket {
+export interface IBasketWithRecords {
   plus: number;
   minus: number;
   records: r.IRecord[];
-  baskets: { [basket: string]: IBasket };
+  baskets: { [basket: string]: IBasketWithRecords };
 }
 
-function createEmptyBasket(): IBasket {
+function createEmptyBasket(): IBasketWithRecords {
   return {
     plus: 0,
     minus: 0,
@@ -74,7 +74,7 @@ export function sort(
   return root;
 }
 
-function addToBasket(root: IBasket, path: string[], record: r.IRecord) {
+function addToBasket(root: IBasketWithRecords, path: string[], record: r.IRecord) {
   const baskets = getOrCreateBaskets(root, path);
   baskets.forEach((b) =>
     record.amount > 0 ? (b.plus += record.amount) : (b.minus += record.amount)
@@ -118,7 +118,7 @@ export function getTx(record: r.IRecord) {
   }/${formatDate(record.date)}`;
 }
 
-function getOrCreateBaskets(root: IBasket, path: string[]): IBasket[] {
+function getOrCreateBaskets(root: IBasketWithRecords, path: string[]): IBasketWithRecords[] {
   if (!path.length) return [root];
   const basket =
     root.baskets[path[0]] || (root.baskets[path[0]] = createEmptyBasket());

@@ -1,7 +1,7 @@
 import * as b from "bobril";
 
 export function Button(
-  p: { text: string } & (
+  p: { text: string, disabled?: boolean } & (
     | { route: string }
     | { onClick: () => void; selected?: boolean }
   )
@@ -11,6 +11,7 @@ export function Button(
     <input
       type="button"
       style={selected ? { fontWeight: "bold" } : undefined}
+      disabled={p.disabled ? "disabled" : undefined}
       value={p.text}
       onClick={
         hasOnClick(p)

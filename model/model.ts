@@ -30,6 +30,12 @@ class Model {
       this.records[0].date.getTime()
     );
   }
+  @computed get basketTree() {
+    const baskets = [...this.rules.map(r => r.bskt), ...this.transferRules.map(r => r.toBasket), ...this.transferRules.map(r => r.fromBasket)]
+    const basketTree = <IBasket>{ children: {}};
+    baskets.forEach(basket => appendBasket(basket, basketTree))
+    return basketTree;
+  }
   @computed get allBaskets() {
     return rule.sort(this.records, this.rules, this.transferRules);
   }
@@ -60,7 +66,7 @@ class Model {
         this.transferRules.filter((r) => splitter(r.date) === id)
       );
       return c;
-    }, {} as { [id: string]: rule.IBasket });
+    }, {} as { [id: string]: rule.IBasketWithRecords });
   }
 
   splitRecordsBy(splitter: (d: Date) => string) {
@@ -88,4 +94,18 @@ function getMonth(date: Date) {
     "-" +
     leftPad2(Math.floor(date.getMonth() / 2) * 2 + 2)
   );
+}
+
+export interface IBasket {
+  children: { [name: string]: IBasket };
+}
+
+function appendBasket(basket: string[] | null, node: IBasket) {
+  if (!basket || !basket.length)
+    return;
+  const [current, ...rest] = basket;
+  if (!node.children[current]) {
+    node.children[current] = {children: {}};
+  }
+  appendBasket(rest, node.children[current]);
 }

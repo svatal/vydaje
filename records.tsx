@@ -9,6 +9,7 @@ import { getTx } from "./model/rule";
 import { formatDate } from "./util";
 import { ContextMenu } from "./components/contextMenu";
 import { Modal } from "./components/modal";
+import { BasketPicker } from "./basketPicker";
 
 enum Filter {
   All,
@@ -29,6 +30,7 @@ export function Records(p?: {
   const [txBasket, setTxBasket] = b.useState<
     { name: string; tx: string } | undefined
   >(undefined);
+  const [isBasketPickerOpen, setIsBasketPickerOpen] = b.useState(false);
 
   const allRecords =
     p?.records ?? model.records.filter(getFilter(filter, searchString));
@@ -118,10 +120,12 @@ export function Records(p?: {
             Kosik:{" "}
             <input
               type="text"
+              value={txBasket.name}
               onChange={(newName) =>
                 setTxBasket({ ...txBasket, name: newName })
               }
             ></input>
+            <Button text="Vybrat" onClick={() => setIsBasketPickerOpen(true)} />
           </div>
           <Button
             text="Ok"
@@ -141,6 +145,15 @@ export function Records(p?: {
             }}
           />
         </Modal>
+      )}
+      {isBasketPickerOpen && (
+        <BasketPicker
+          onCancel={() => setIsBasketPickerOpen(false)}
+          onSubmit={(basket) => {
+            setIsBasketPickerOpen(false);
+            setTxBasket({ ...txBasket!, name: basket.join("/") });
+          }}
+        />
       )}
     </>
   );

@@ -1,9 +1,9 @@
 import * as b from "bobril";
 import { IRecord } from "./model/record";
-import { IBasket } from "./model/rule";
+import { IBasketWithRecords } from "./model/rule";
 import { Table } from "./components/table";
 
-export function renderRecordsTable(basket: IBasket) {
+export function renderRecordsTable(basket: IBasketWithRecords) {
   // const records = getRecords(basket)
   //   .sort((a, b) => a.amount - b.amount)
   //   .slice(0, 50);
@@ -35,7 +35,7 @@ export function renderRecordsTable(basket: IBasket) {
   );
 }
 
-function getRecords(basket: IBasket): IRecord[] {
+function getRecords(basket: IBasketWithRecords): IRecord[] {
   const baskets = basket.baskets;
   return [
     ...Object.keys(baskets).reduce(
