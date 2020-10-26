@@ -5,11 +5,9 @@ import { Table } from "./components/table";
 import { basketToString } from "./util";
 import { HeaderWithContent } from "./components/headerWithContent";
 import { Button } from "./components/button";
-import { getTx } from "./model/rule";
 import { formatDate } from "./util";
 import { ContextMenu } from "./components/contextMenu";
-import { Modal } from "./components/modal";
-import { BasketPicker } from "./basketPicker";
+import { RecordRuleModal } from "./createRule/recordRuleModal";
 
 enum Filter {
   All,
@@ -18,19 +16,25 @@ enum Filter {
   Search,
 }
 
+enum CreateRuleType {
+  Record,
+}
+
 export function Records(p?: {
   records?: IRecord[];
   hideBasketColumn?: boolean;
 }) {
   const [filter, setFilter] = b.useState(Filter.NoRule);
   const [searchString, setSearchString] = b.useState("");
+  const [selectedRecord, setSelectedRecord] = b.useState<IRecord | undefined>(
+    undefined
+  );
   const [contextMenu, setContextMenu] = b.useState<
-    { pos: { x: number; y: number }; record: IRecord } | undefined
+    { x: number; y: number } | undefined
   >(undefined);
-  const [txBasket, setTxBasket] = b.useState<
-    { name: string; tx: string } | undefined
+  const [createRuleType, setCreateRuleType] = b.useState<
+    CreateRuleType | undefined
   >(undefined);
-  const [isBasketPickerOpen, setIsBasketPickerOpen] = b.useState(false);
 
   const allRecords =
     p?.records ?? model.records.filter(getFilter(filter, searchString));
@@ -82,8 +86,11 @@ export function Records(p?: {
             ...(hideBasketColumn ? [] : ["cilovy kosik"]),
           ]}
           data={records.map((r) => ({
-            onContextMenu: (pos) => setContextMenu({ pos, record: r }),
-            isSelected: r === contextMenu?.record || getTx(r) === txBasket?.tx,
+            onContextMenu: (pos) => {
+              setSelectedRecord(r);
+              setContextMenu(pos);
+            },
+            isSelected: r === selectedRecord,
             columns: [
               `${r.targetAccount}/${r.targetBank}`,
               formatDate(r.date),
@@ -103,55 +110,23 @@ export function Records(p?: {
       </HeaderWithContent>
       {contextMenu && (
         <ContextMenu
-          pos={contextMenu.pos}
+          pos={contextMenu}
           onHide={() => setContextMenu(undefined)}
+          onCancel={() => setSelectedRecord(undefined)}
           rows={[
             {
               label: "Pravidlo pro tento zaznam",
-              onClick: () =>
-                setTxBasket({ name: "test", tx: getTx(contextMenu.record) }),
+              onClick: () => setCreateRuleType(CreateRuleType.Record),
             },
           ]}
         />
       )}
-      {txBasket && (
-        <Modal>
-          <div>
-            Kosik:{" "}
-            <input
-              type="text"
-              value={txBasket.name}
-              onChange={(newName) =>
-                setTxBasket({ ...txBasket, name: newName })
-              }
-            ></input>
-            <Button text="Vybrat" onClick={() => setIsBasketPickerOpen(true)} />
-          </div>
-          <Button
-            text="Ok"
-            onClick={() => {
-              model.rules.push({
-                bskt: txBasket.name.trim().split("/"),
-                tx: txBasket.tx,
-              });
-              model.store();
-              setTxBasket(undefined);
-            }}
-          />
-          <Button
-            text="Cancel"
-            onClick={() => {
-              setTxBasket(undefined);
-            }}
-          />
-        </Modal>
-      )}
-      {isBasketPickerOpen && (
-        <BasketPicker
-          onCancel={() => setIsBasketPickerOpen(false)}
-          onSubmit={(basket) => {
-            setIsBasketPickerOpen(false);
-            setTxBasket({ ...txBasket!, name: basket.join("/") });
+      {createRuleType === CreateRuleType.Record && (
+        <RecordRuleModal
+          record={selectedRecord!}
+          onClose={() => {
+            setSelectedRecord(undefined);
+            setCreateRuleType(undefined);
           }}
         />
       )}

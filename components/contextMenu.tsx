@@ -6,6 +6,7 @@ export function ContextMenu(p: {
     y: number;
   };
   onHide: () => void;
+  onCancel?: () => void;
   rows: {
     label: string;
     onClick: () => void;
@@ -22,7 +23,10 @@ export function ContextMenu(p: {
           right: 0,
           background: "rgba(0,0,0,0.2)",
         }}
-        onClick={p.onHide}
+        onClick={() => {
+          p.onCancel?.();
+          p.onHide();
+        }}
       />
       <div
         style={{
