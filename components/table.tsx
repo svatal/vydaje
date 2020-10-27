@@ -1,9 +1,14 @@
 import * as b from "bobril";
 
+export interface IPosition {
+  x: number;
+  y: number;
+}
+
 export interface IRow {
   columns: b.IBobrilChildren[];
   onClick?: () => void;
-  onContextMenu?: (pos: { x: number; y: number }) => void;
+  onContextMenu?: (pos: IPosition) => void;
   isSelected?: boolean;
 }
 

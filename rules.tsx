@@ -3,10 +3,10 @@ import { model } from "./model/model";
 import { Table } from "./components/table";
 import { basketToString } from "./util";
 import { INormalizedRule } from "./model/rule";
-import { Records } from "./records";
 import { HeaderWithContent } from "./components/headerWithContent";
 import { Button } from "./components/button";
 import { ContextMenu } from "./components/contextMenu";
+import { RecordsTable } from "./recordsTable";
 
 enum RecordFilter {
   Winner,
@@ -71,8 +71,8 @@ export function Rules() {
               />
             </>
             {
-              <Records
-                hideBasketColumn={recordFilter === RecordFilter.Winner}
+              <RecordsTable
+                showBasketsColumn={recordFilter !== RecordFilter.Winner}
                 records={recordsWithRules
                   .filter((r) =>
                     recordFilter === RecordFilter.Winner

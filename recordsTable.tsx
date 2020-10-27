@@ -1,38 +1,15 @@
 import * as b from "bobril";
 import { IRecord } from "./model/record";
 import { IBasketWithRecords } from "./model/rule";
-import { Table } from "./components/table";
+import { IPosition, Table } from "./components/table";
+import { basketToString, formatDate } from "./util";
+import { model } from "./model/model";
 
 export function renderRecordsTable(basket: IBasketWithRecords) {
-  // const records = getRecords(basket)
-  //   .sort((a, b) => a.amount - b.amount)
-  //   .slice(0, 50);
-  const records = getRecords(basket)
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
-    // .filter(r => r.note.indexOf("Výběr z bankomatu:") !== 0)
-    .slice(0, 200);
-  return (
-    <Table
-      headers={[
-        "account",
-        "datum",
-        "castka",
-        "zprava pro prijemce",
-        "poznamka",
-      ]}
-      data={records.map((r) => ({
-        columns: [
-          `${r.targetAccount}/${r.targetBank}`,
-          `${r.date.getFullYear()}/${
-            r.date.getMonth() + 1
-          }/${r.date.getDate()}`,
-          r.amount,
-          r.recieversMessage,
-          r.note,
-        ],
-      }))}
-    />
+  const records = getRecords(basket).sort(
+    (a, b) => a.date.getTime() - b.date.getTime()
   );
+  return <RecordsTable records={records} showBasketsColumn={false} />;
 }
 
 function getRecords(basket: IBasketWithRecords): IRecord[] {
@@ -44,4 +21,47 @@ function getRecords(basket: IBasketWithRecords): IRecord[] {
     ),
     ...basket.records,
   ];
+}
+
+export const recordsTableMaxLimit = 200;
+
+export function RecordsTable(p: {
+  records: IRecord[];
+  showBasketsColumn: boolean;
+  onContextMenu?: (record: IRecord, pos: IPosition) => void;
+  isSelected?: (record: IRecord) => boolean;
+}) {
+  const records = p.records.slice(0, recordsTableMaxLimit);
+  return (
+    <Table
+      headers={[
+        "account",
+        "datum",
+        "castka",
+        "zprava pro prijemce",
+        "poznamka",
+        ...(p.showBasketsColumn ? ["cilovy kosik"] : []),
+      ]}
+      data={records.map((r) => ({
+        onContextMenu: p.onContextMenu
+          ? (pos) => p.onContextMenu!(r, pos)
+          : undefined,
+        isSelected: p.isSelected?.(r),
+        columns: [
+          `${r.targetAccount}/${r.targetBank}`,
+          formatDate(r.date),
+          r.amount,
+          r.recieversMessage,
+          r.note,
+          ...(p.showBasketsColumn
+            ? [
+                model
+                  .getRulesForRecord(r)
+                  .map((rule) => <div>{basketToString(rule.bskt)}</div>),
+              ]
+            : []),
+        ],
+      }))}
+    />
+  );
 }

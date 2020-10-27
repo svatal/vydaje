@@ -1,5 +1,10 @@
 import * as b from "bobril";
 
+export interface IContextMenuRow {
+  label: string;
+  onClick: () => void;
+}
+
 export function ContextMenu(p: {
   pos: {
     x: number;
@@ -7,10 +12,7 @@ export function ContextMenu(p: {
   };
   onHide: () => void;
   onCancel?: () => void;
-  rows: {
-    label: string;
-    onClick: () => void;
-  }[];
+  rows: IContextMenuRow[];
 }) {
   return (
     <>
@@ -33,15 +35,13 @@ export function ContextMenu(p: {
           position: "absolute",
           left: p.pos.x,
           top: p.pos.y,
-          width: 300,
-          height: p.rows.length * 20,
           background: "white",
           padding: 10,
         }}
       >
         {p.rows.map((r) => (
           <div
-            style={{ height: 20, lineHeight: "20px", cursor: "pointer" }}
+            style={{ lineHeight: "20px", cursor: "pointer" }}
             onClick={() => {
               r.onClick();
               p.onHide();
