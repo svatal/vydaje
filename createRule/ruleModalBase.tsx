@@ -23,7 +23,6 @@ export function RuleModalBase(p: {
   const existingMatches = matchingRecords.filter(
     (record) => model.getRulesForRecord(record).length > 0
   );
-
   return (
     <>
       <Modal>
@@ -51,6 +50,7 @@ export function RuleModalBase(p: {
         </div>
         <Button
           text="Ok"
+          disabled={!name}
           onClick={() => {
             model.rules.push(rule);
             model.store();

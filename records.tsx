@@ -7,6 +7,7 @@ import { ContextMenu } from "./components/contextMenu";
 import { RecordRuleModal } from "./createRule/recordRuleModal";
 import { TextSelectionRuleModal } from "./createRule/textSelectionRuleModal";
 import { RecordsTable, recordsTableMaxLimit } from "./recordsTable";
+import { TargetAccountRuleModal } from "./createRule/targetAccountRuleModal";
 
 enum Filter {
   All,
@@ -18,6 +19,7 @@ enum Filter {
 enum CreateRuleType {
   Record,
   SelectionText,
+  TargetAccount,
 }
 
 export function Records() {
@@ -82,7 +84,7 @@ export function Records() {
           isSelected={(r) => r === selectedRecord}
         />
       </HeaderWithContent>
-      {contextMenu && (
+      {contextMenu && selectedRecord && (
         <ContextMenu
           pos={contextMenu}
           onHide={() => setContextMenu(undefined)}
@@ -101,22 +103,42 @@ export function Records() {
                   },
                 ]
               : []),
+            ...(selectedRecord.targetAccount
+              ? [
+                  {
+                    label: `Pravidlo pro zaznamy s protiuctem ${selectedRecord.targetAccount}/${selectedRecord.targetBank}`,
+                    onClick: () =>
+                      setCreateRuleType(CreateRuleType.TargetAccount),
+                  },
+                ]
+              : []),
           ]}
         />
       )}
-      {createRuleType === CreateRuleType.Record && (
+      {createRuleType === CreateRuleType.Record && selectedRecord && (
         <RecordRuleModal
-          record={selectedRecord!}
+          record={selectedRecord}
           onClose={() => {
             setSelectedRecord(undefined);
             setCreateRuleType(undefined);
           }}
         />
       )}
-      {createRuleType === CreateRuleType.SelectionText && (
-        <TextSelectionRuleModal
-          record={selectedRecord!}
-          textSelection={selection!}
+      {createRuleType === CreateRuleType.SelectionText &&
+        selectedRecord &&
+        selection && (
+          <TextSelectionRuleModal
+            record={selectedRecord}
+            textSelection={selection}
+            onClose={() => {
+              setSelectedRecord(undefined);
+              setCreateRuleType(undefined);
+            }}
+          />
+        )}
+      {createRuleType === CreateRuleType.TargetAccount && selectedRecord && (
+        <TargetAccountRuleModal
+          record={selectedRecord}
           onClose={() => {
             setSelectedRecord(undefined);
             setCreateRuleType(undefined);
