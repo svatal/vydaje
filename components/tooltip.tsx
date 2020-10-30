@@ -10,10 +10,18 @@ export function TooltipWrapper(p: {
   tooltip: b.IBobrilChildren;
   orientation?: Orientation;
 }) {
+  const orientation = p.orientation || Orientation.Top;
   return (
     <div style={wrapperStyle}>
       {p.children}
-      <div style={[tooltipStyle, tooltipTopStyle]}>{p.tooltip}</div>
+      <div
+        style={[
+          tooltipStyle,
+          orientation === Orientation.Top ? tooltipTopStyle : tooltipLeftStyle,
+        ]}
+      >
+        {p.tooltip}
+      </div>
     </div>
   );
 }
@@ -39,21 +47,44 @@ const tooltipStyle = [
       after: {
         content: "",
         position: "absolute",
-        top: "100%",
-        left: 50,
-        marginLeft: -5,
         borderWidth: 5,
         borderStyle: "solid",
-        borderColor: "#555 transparent transparent transparent",
       },
     }
   ),
   b.styleDefEx(wrapperStyle + ":hover>", { visibility: "visible" }),
 ];
 
-const tooltipTopStyle = b.styleDef({
-  minWidth: 120,
-  bottom: "125%",
-  left: "50%",
-  marginLeft: -60,
-});
+const tooltipTopStyle = b.styleDef(
+  {
+    minWidth: 120,
+    bottom: "125%",
+    left: "50%",
+    marginLeft: -60,
+  },
+  {
+    after: {
+      top: "100%",
+      left: 50,
+      marginLeft: -5,
+      borderColor: "#555 transparent transparent transparent",
+    },
+  }
+);
+
+const tooltipLeftStyle = b.styleDef(
+  {
+    minHeight: 40,
+    right: "125%",
+    top: "50%",
+    marginTop: -20,
+  },
+  {
+    after: {
+      left: "100%",
+      top: 20,
+      marginTop: -5,
+      borderColor: "transparent transparent transparent #555",
+    },
+  }
+);
