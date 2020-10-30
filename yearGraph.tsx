@@ -28,7 +28,7 @@ export function renderTimeGraph(
       [0]
     )
   );
-  const maxVal = Math.max(...values.map((v) => v[names.length]));
+  const maxVal = Math.max(0, ...values.map((v) => v[names.length]));
 
   return (
     <>

@@ -25,15 +25,19 @@ class Model {
   @observable rules: rule.INormalizedRule[] = [];
   @observable transferRules: rule.ITransferRule[] = [];
   @computed get overTimeInMs() {
-    return (
-      this.records[this.records.length - 1].date.getTime() -
-      this.records[0].date.getTime()
-    );
+    return this.records.length
+      ? this.records[this.records.length - 1].date.getTime() -
+          this.records[0].date.getTime()
+      : 1;
   }
   @computed get basketTree() {
-    const baskets = [...this.rules.map(r => r.bskt), ...this.transferRules.map(r => r.toBasket), ...this.transferRules.map(r => r.fromBasket)]
-    const basketTree = <IBasket>{ children: {}};
-    baskets.forEach(basket => appendBasket(basket, basketTree))
+    const baskets = [
+      ...this.rules.map((r) => r.bskt),
+      ...this.transferRules.map((r) => r.toBasket),
+      ...this.transferRules.map((r) => r.fromBasket),
+    ];
+    const basketTree = <IBasket>{ children: {} };
+    baskets.forEach((basket) => appendBasket(basket, basketTree));
     return basketTree;
   }
   @computed get allBaskets() {
@@ -101,11 +105,10 @@ export interface IBasket {
 }
 
 function appendBasket(basket: string[] | null, node: IBasket) {
-  if (!basket || !basket.length)
-    return;
+  if (!basket || !basket.length) return;
   const [current, ...rest] = basket;
   if (!node.children[current]) {
-    node.children[current] = {children: {}};
+    node.children[current] = { children: {} };
   }
   appendBasket(rest, node.children[current]);
 }
