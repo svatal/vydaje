@@ -4,6 +4,8 @@ import { IBasketWithRecords } from "./model/rule";
 import { IPosition, Table } from "./components/table";
 import { basketToString, formatDate } from "./util";
 import { model } from "./model/model";
+import { TooltipWrapper } from "./components/tooltip";
+import { RuleDescription } from "./rules";
 
 export function renderRecordsTable(basket: IBasketWithRecords) {
   const records = getRecords(basket).sort(
@@ -55,9 +57,13 @@ export function RecordsTable(p: {
           r.note,
           ...(p.showBasketsColumn
             ? [
-                model
-                  .getRulesForRecord(r)
-                  .map((rule) => <div>{basketToString(rule.bskt)}</div>),
+                model.getRulesForRecord(r).map((rule) => (
+                  <div>
+                    <TooltipWrapper tooltip={RuleDescription(rule)}>
+                      {basketToString(rule.bskt)}
+                    </TooltipWrapper>
+                  </div>
+                )),
               ]
             : []),
         ],

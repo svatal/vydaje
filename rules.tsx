@@ -105,7 +105,7 @@ export function Rules() {
   );
 }
 
-function RuleDescription(r: INormalizedRule) {
+export function RuleDescription(r: INormalizedRule) {
   return [
     rule("Typ", r.type),
     rule("cilovy ucet", r.acc),
