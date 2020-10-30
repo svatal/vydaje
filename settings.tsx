@@ -35,8 +35,8 @@ function replaceRecordsFromCSV(input: string) {
   try {
     const rawData = parsed.data.slice(1);
     const records = r.toRecords(rawData);
-    // TODO: apply
-    console.log(records);
+    model.records = records;
+    model.store();
   } catch (e) {
     console.error("Chyba při parsování csv", e);
     alert("Neočekávaný format.");
