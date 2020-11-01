@@ -3,6 +3,8 @@ import { model } from "./model/model";
 import { renderBasket } from "./basketPie";
 import { renderRecordsTable } from "./recordsTable";
 import { renderTimeGraph } from "./yearGraph";
+import { formatDate, safeGet } from "./util";
+import { DateRangePicker } from "./components/dateRangePicker";
 
 enum DisplaySum {
   absolute = 0,
@@ -14,11 +16,28 @@ const displaySum = DisplaySum.monthly;
 let path: string[] = [];
 
 export function Showcase() {
+  const baseDate = safeGet(model.records, 0)?.date;
+  const lastDate = safeGet(model.records, model.records.length - 1)?.date;
+  const [from, setFrom] = b.useState(baseDate);
+  const [to, setTo] = b.useState(lastDate);
   const baskets = [model.allBaskets];
   path.forEach((p) => baskets.push(baskets[baskets.length - 1].baskets[p]));
   const displayCoef = getSumCoef(displaySum);
   return (
     <div>
+      {baseDate && lastDate && from && to && (
+        <DateRangePicker
+          min={baseDate}
+          max={lastDate}
+          from={from}
+          to={to}
+          onChange={(from, to) => {
+            console.log("delayed update!", formatDate(from), formatDate(to));
+            setFrom(from);
+            setTo(to);
+          }}
+        />
+      )}
       {baskets.map((b, i) =>
         renderBasket(b, i, path, updatePathComponent, displayCoef)
       )}

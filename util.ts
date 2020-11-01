@@ -59,3 +59,16 @@ export function formatDate(d: Date) {
 export function escapeRegExp(s: string) {
   return s.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
+
+export function safeGet<T>(array: T[], index: number): T | undefined {
+  return array[index];
+}
+
+export function getDayFromDate(date: Date | undefined): number {
+  if (!date) return 0;
+  return Math.trunc(date.getTime() / 1000 / 60 / 60 / 24);
+}
+
+export function getDateFromDay(day: number): Date {
+  return new Date(day * 1000 * 60 * 60 * 24);
+}
