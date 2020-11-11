@@ -3,7 +3,7 @@ import { model } from "./model/model";
 import { renderBasket } from "./basketPie";
 import { renderRecordsTable } from "./recordsTable";
 import { renderTimeGraph } from "./yearGraph";
-import { formatDate, safeGet } from "./util";
+import { safeGet } from "./util";
 import { DateRangePicker } from "./components/dateRangePicker";
 
 enum DisplaySum {
@@ -20,9 +20,10 @@ export function Showcase() {
   const lastDate = safeGet(model.records, model.records.length - 1)?.date;
   const [from, setFrom] = b.useState(baseDate);
   const [to, setTo] = b.useState(lastDate);
-  const baskets = [model.allBaskets];
+  const allBaskets = model.getAllBaskets(from, to);
+  const baskets = [allBaskets];
   path.forEach((p) => baskets.push(baskets[baskets.length - 1].baskets[p]));
-  const displayCoef = getSumCoef(displaySum);
+  const displayCoef = getSumCoef(displaySum, from, to);
   return (
     <div>
       {baseDate && lastDate && from && to && (
@@ -32,7 +33,6 @@ export function Showcase() {
           from={from}
           to={to}
           onChange={(from, to) => {
-            console.log("delayed update!", formatDate(from), formatDate(to));
             setFrom(from);
             setTo(to);
           }}
@@ -41,8 +41,11 @@ export function Showcase() {
       {baskets.map((b, i) =>
         renderBasket(b, i, path, updatePathComponent, displayCoef)
       )}
-      {renderTimeGraph(model.allBaskets, model.yearBaskets, path)}
-      {renderTimeGraph(model.allBaskets, model.monthBaskets, path)}
+      {from &&
+        to &&
+        to.getTime() - from.getTime() >= 1000 * 60 * 60 * 24 * 365 * 2 &&
+        renderTimeGraph(allBaskets, model.getYearBaskets(from, to), path)}
+      {renderTimeGraph(allBaskets, model.getMonthBaskets(from, to), path)}
       {renderRecordsTable(baskets[baskets.length - 1])}
     </div>
   );
@@ -58,11 +61,15 @@ function updatePathComponent(basketName: string, level: number) {
   };
 }
 
-function getSumCoef(ds: DisplaySum) {
+function getSumCoef(
+  ds: DisplaySum,
+  from: Date | undefined,
+  to: Date | undefined
+) {
   switch (ds) {
     case DisplaySum.absolute:
       return 1;
     default:
-      return ds / model.overTimeInMs;
+      return ds / model.getOverTimeInMs(from, to);
   }
 }

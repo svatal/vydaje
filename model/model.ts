@@ -24,10 +24,10 @@ class Model {
   @observable records: r.IRecord[] = [];
   @observable rules: rule.INormalizedRule[] = [];
   @observable transferRules: rule.ITransferRule[] = [];
-  @computed get overTimeInMs() {
-    return this.records.length
-      ? this.records[this.records.length - 1].date.getTime() -
-          this.records[0].date.getTime()
+  @computed getOverTimeInMs(from: Date | undefined, to: Date | undefined) {
+    const records = this.getRecords(from, to);
+    return records.length
+      ? records[records.length - 1].date.getTime() - records[0].date.getTime()
       : 1;
   }
   @computed get basketTree() {
@@ -40,29 +40,34 @@ class Model {
     baskets.forEach((basket) => appendBasket(basket, basketTree));
     return basketTree;
   }
-  @computed get allBaskets() {
-    return rule.sort(this.records, this.rules, this.transferRules);
+  @computed getAllBaskets(from: Date | undefined, to: Date | undefined) {
+    return rule.sort(
+      this.getRecords(from, to),
+      this.rules,
+      filter(this.transferRules, from, to)
+    );
   }
-  @computed get yearBaskets() {
-    return this.splitIntoBaskets(getYear);
+  @computed getYearBaskets(from: Date | undefined, to: Date | undefined) {
+    return this.splitIntoBaskets(getYear, from, to);
   }
-  @computed get monthBaskets() {
-    return this.splitIntoBaskets(getMonth);
+  @computed getMonthBaskets(from: Date | undefined, to: Date | undefined) {
+    return this.splitIntoBaskets(getMonth, from, to);
   }
 
   @computed getRulesForRecord(record: r.IRecord) {
     return this.rules.filter((r) => rule.isMatch(record, r));
   }
 
-  @computed getBasketForRecord(record: r.IRecord) {
-    const [rule] = this.getRulesForRecord(record);
-    const basket = !rule ? ["ostatni"] : rule.bskt;
-    if (!basket) return null;
-    return [...basket, `${record.targetAccount}/${record.targetBank}`];
+  @computed private getRecords(from: Date | undefined, to: Date | undefined) {
+    return filter(this.records, from, to);
   }
 
-  splitIntoBaskets(splitter: (d: Date) => string) {
-    const splitRecords = this.splitRecordsBy(splitter);
+  private splitIntoBaskets(
+    splitter: (d: Date) => string,
+    from: Date | undefined,
+    to: Date | undefined
+  ) {
+    const splitRecords = this.splitRecordsBy(splitter, from, to);
     return Object.keys(splitRecords).reduce((c, id) => {
       c[id] = rule.sort(
         splitRecords[id],
@@ -73,9 +78,13 @@ class Model {
     }, {} as { [id: string]: rule.IBasketWithRecords });
   }
 
-  splitRecordsBy(splitter: (d: Date) => string) {
+  private splitRecordsBy(
+    splitter: (d: Date) => string,
+    from: Date | undefined,
+    to: Date | undefined
+  ) {
     let basket: { [id: string]: r.IRecord[] } = {};
-    this.records.forEach((record) => {
+    this.getRecords(from, to).forEach((record) => {
       let id = splitter(record.date);
       if (!basket[id]) basket[id] = [];
       basket[id].push(record);
@@ -111,4 +120,14 @@ function appendBasket(basket: string[] | null, node: IBasket) {
     node.children[current] = { children: {} };
   }
   appendBasket(rest, node.children[current]);
+}
+
+function filter<T extends { date: Date }>(
+  items: T[],
+  from: Date | undefined,
+  to: Date | undefined
+) {
+  return items.filter(
+    (i) => (!from || i.date >= from) && (!to || i.date <= to)
+  );
 }
