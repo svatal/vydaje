@@ -49,8 +49,18 @@ function pie(
   displayCoef: number
 ) {
   const names = Object.keys(baskets);
-  const sum = names.reduce((sum, name) => sum + getMalus(baskets[name]), 0);
-  names.sort((a, b) => getBalance(baskets[a]) - getBalance(baskets[b]));
+  const sumOfMaluses = names.reduce(
+    (sum, name) => sum + getMalus(baskets[name]),
+    0
+  );
+  const useMalus = sumOfMaluses != 0;
+  const sum = useMalus
+    ? sumOfMaluses
+    : names.reduce((sum, name) => sum + getBonus(baskets[name]), 0);
+  names.sort(
+    (a, b) =>
+      (useMalus ? 1 : -1) * (getBalance(baskets[a]) - getBalance(baskets[b]))
+  );
   let currentSum = 0;
   return [
     `sum: ${formatCurrency(sum * displayCoef)}`,
@@ -60,8 +70,10 @@ function pie(
       attrs: { width: 200, height: 200, viewBox: "-1 -1 2 2" },
       children: names.map((name) => {
         const oldSum = currentSum;
-        const malus = getMalus(baskets[name]);
-        currentSum += malus;
+        const current = useMalus
+          ? getMalus(baskets[name])
+          : getBonus(baskets[name]);
+        currentSum += current;
         return {
           tag: "path",
           component: updatePathComponent(name, index),
@@ -78,7 +90,7 @@ function pie(
           },
           children: {
             tag: "title",
-            children: `${name} - ${formatCurrency(displayCoef * malus)}`,
+            children: `${name} - ${formatCurrency(displayCoef * current)}`,
           },
         };
       }),
@@ -86,8 +98,12 @@ function pie(
   ];
 }
 
-export function getMalus(basket: rule.IBasketWithRecords) {
+function getMalus(basket: rule.IBasketWithRecords) {
   return -Math.min(0, basket.plus + basket.minus);
+}
+
+function getBonus(basket: rule.IBasketWithRecords) {
+  return Math.max(0, basket.plus + basket.minus);
 }
 
 function getBalance(basket: rule.IBasketWithRecords) {
