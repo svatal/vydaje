@@ -40,8 +40,7 @@ export function DateRangePicker(p: {
         }}
         width={500}
       />
-      {formatDate(getDateFromDay(from))} - {formatDate(getDateFromDay(to))}{" "}
-      (zatim bez efektu)
+      {formatDate(getDateFromDay(from))} - {formatDate(getDateFromDay(to))}
     </div>
   );
 }
