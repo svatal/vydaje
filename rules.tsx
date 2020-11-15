@@ -7,6 +7,7 @@ import { HeaderWithContent } from "./components/headerWithContent";
 import { Button } from "./components/button";
 import { ContextMenu } from "./components/contextMenu";
 import { RecordsTable } from "./recordsTable";
+import { ChangeBasketModal } from "./editRule/changeBasketModal";
 
 enum RecordFilter {
   Winner,
@@ -25,6 +26,10 @@ export function Rules() {
   const [contextMenu, setContextMenu] = b.useState<
     { pos: { x: number; y: number }; rule: INormalizedRule } | undefined
   >(undefined);
+  const [
+    changeBasketModalRule,
+    setChangeBasketModalRule,
+  ] = b.useState<INormalizedRule | null>(null);
   return (
     <div
       style={{
@@ -98,7 +103,23 @@ export function Rules() {
                 model.store();
               },
             },
+            ...(contextMenu.rule.bskt
+              ? [
+                  {
+                    label: "Zmenit kosik",
+                    onClick: () => {
+                      setChangeBasketModalRule(contextMenu.rule);
+                    },
+                  },
+                ]
+              : []),
           ]}
+        />
+      )}
+      {changeBasketModalRule && (
+        <ChangeBasketModal
+          rule={changeBasketModalRule}
+          onClose={() => setChangeBasketModalRule(null)}
         />
       )}
     </div>
