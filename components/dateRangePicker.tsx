@@ -11,33 +11,17 @@ export function DateRangePicker(p: {
 }) {
   const min = getDayFromDate(p.min);
   const max = getDayFromDate(p.max);
-  const pFrom = getDayFromDate(p.from);
-  const pTo = getDayFromDate(p.to);
-  const [from, setFrom] = b.useState(pFrom);
-  const [to, setTo] = b.useState(pTo);
-  const timeoutId = b.useRef<ReturnType<typeof setTimeout>>();
-  function scheduleUpdate(newFrom: number, newTo: number) {
-    clearTimeout(timeoutId.current);
-    timeoutId.current = setTimeout(
-      () => p.onChange(getDateFromDay(newFrom), getDateFromDay(newTo)),
-      1000
-    );
-  }
+  const from = getDayFromDate(p.from);
+  const to = getDayFromDate(p.to);
   return (
     <div>
       <MinMaxSlider
         min={min}
         max={max}
         lower={from}
-        onLowerChange={(newFrom) => {
-          setFrom(newFrom);
-          scheduleUpdate(newFrom, to);
-        }}
+        onLowerChange={(newFrom) => p.onChange(getDateFromDay(newFrom), p.to)}
         higher={to}
-        onHigherChange={(newTo) => {
-          setTo(newTo);
-          scheduleUpdate(from, newTo);
-        }}
+        onHigherChange={(newTo) => p.onChange(p.from, getDateFromDay(newTo))}
         width={500}
       />
       {formatDate(getDateFromDay(from))} - {formatDate(getDateFromDay(to))}

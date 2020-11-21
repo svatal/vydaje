@@ -5,6 +5,7 @@ import { renderRecordsTable } from "./recordsTable";
 import { renderTimeGraph } from "./yearGraph";
 import { safeGet } from "./util";
 import { DateRangePicker } from "./components/dateRangePicker";
+import { useDelayed } from "./hooks";
 
 enum DisplaySum {
   absolute = 0,
@@ -18,24 +19,24 @@ let path: string[] = [];
 export function Showcase() {
   const baseDate = safeGet(model.records, 0)?.date;
   const lastDate = safeGet(model.records, model.records.length - 1)?.date;
-  const [from, setFrom] = b.useState(baseDate);
-  const [to, setTo] = b.useState(lastDate);
+  const [
+    { from, to },
+    setTimeRange,
+    { from: earlyFrom, to: earlyTo },
+  ] = useDelayed({ from: baseDate, to: lastDate });
   const allBaskets = model.getAllBaskets(from, to);
   const baskets = [allBaskets];
   path.forEach((p) => baskets.push(baskets[baskets.length - 1].baskets[p]));
   const displayCoef = getSumCoef(displaySum, from, to);
   return (
     <div>
-      {baseDate && lastDate && from && to && (
+      {baseDate && lastDate && earlyFrom && earlyTo && (
         <DateRangePicker
           min={baseDate}
           max={lastDate}
-          from={from}
-          to={to}
-          onChange={(from, to) => {
-            setFrom(from);
-            setTo(to);
-          }}
+          from={earlyFrom}
+          to={earlyTo}
+          onChange={(from, to) => setTimeRange({ from, to })}
         />
       )}
       {baskets.map((b, i) =>
