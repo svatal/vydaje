@@ -12,7 +12,11 @@ export interface IRow {
   isSelected?: boolean;
 }
 
-export function Table(p: { headers: string[]; data: IRow[] }) {
+export function Table(p: {
+  headers: string[];
+  data: IRow[];
+  rowLimit?: number;
+}) {
   const [sorting, setSorting] = b.useState<{
     column: number;
     ascending: boolean;
@@ -24,6 +28,9 @@ export function Table(p: { headers: string[]; data: IRow[] }) {
       const bc = b.columns[sorting.column];
       return isBigger(ac, bc) * (sorting.ascending ? 1 : -1);
     });
+  }
+  if (p.rowLimit) {
+    data = data.slice(0, p.rowLimit);
   }
   return (
     <table cellspacing="15px" style={{ width: "100%" }}>

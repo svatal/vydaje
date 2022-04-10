@@ -33,7 +33,6 @@ export function RecordsTable(p: {
   onContextMenu?: (record: IRecord, pos: IPosition) => void;
   isSelected?: (record: IRecord) => boolean;
 }) {
-  const records = p.records.slice(0, recordsTableMaxLimit);
   return (
     <Table
       headers={[
@@ -44,7 +43,8 @@ export function RecordsTable(p: {
         "poznamka",
         ...(p.showBasketsColumn ? ["cilovy kosik"] : []),
       ]}
-      data={records.map((r) => ({
+      rowLimit={recordsTableMaxLimit}
+      data={p.records.map((r) => ({
         onContextMenu: p.onContextMenu
           ? (pos) => p.onContextMenu!(r, pos)
           : undefined,
