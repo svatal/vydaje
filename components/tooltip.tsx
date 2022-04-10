@@ -26,35 +26,38 @@ export function TooltipWrapper(p: {
   );
 }
 
-const wrapperStyle = b.styleDef({
-  position: "relative",
-  display: "inline-block",
-});
-
-const tooltipStyle = [
-  b.styleDef(
-    {
-      visibility: "hidden",
-      backgroundColor: "#555",
-      color: "#fff",
-      textAlign: "center",
-      padding: 5,
-      borderRadius: 6,
-      position: "absolute",
-      zIndex: 1,
+const wrapperStyle = b.styleDef(
+  {
+    position: "relative",
+    display: "inline-block",
+  },
+  {
+    "hover>*": {
+      visibility: "visible",
     },
-    {
-      after: {
-        content: "",
-        position: "absolute",
-        borderWidth: 5,
-        borderStyle: "solid",
-      },
-    }
-  ),
-  b.styleDefEx(wrapperStyle + ":hover>", { visibility: "visible" }),
-];
+  }
+);
 
+const tooltipStyle = b.styleDef(
+  {
+    visibility: "hidden",
+    backgroundColor: "#555",
+    color: "#fff",
+    textAlign: "center",
+    padding: 5,
+    borderRadius: 6,
+    position: "absolute",
+    zIndex: 1,
+  },
+  {
+    after: {
+      content: "",
+      position: "absolute",
+      borderWidth: 5,
+      borderStyle: "solid",
+    },
+  }
+);
 const tooltipTopStyle = b.styleDef(
   {
     minWidth: 120,
@@ -75,7 +78,8 @@ const tooltipTopStyle = b.styleDef(
 const tooltipLeftStyle = b.styleDef(
   {
     minHeight: 40,
-    right: "125%",
+    right: "100%",
+    marginRight: 10,
     top: "50%",
     marginTop: -20,
   },
