@@ -10,10 +10,10 @@ export function RuleModalBase(p: {
   title: string;
   onClose: () => void;
   children?: b.IBobrilChildren;
-  createRule: (basket: string[]) => INormalizedRule;
+  createRule: (basket: string[] | null) => INormalizedRule;
 }) {
-  const [name, setName] = b.useState("");
-  const basket = name.trim().split("/");
+  const [name, setName] = b.useState<string | null>("");
+  const basket = name === null ? null : name.trim().split("/");
   const [isBasketPickerOpen, setIsBasketPickerOpen] = b.useState(false);
   const [isRecordsModalOpen, setIsRecordsModalOpen] = b.useState(false);
   const rule = p.createRule(basket);
@@ -47,10 +47,15 @@ export function RuleModalBase(p: {
         <div>
           Do kosiku: <input type="text" value={name} onChange={setName}></input>
           <Button text="Vybrat" onClick={() => setIsBasketPickerOpen(true)} />
+          {name === null ? (
+            <span style={{ color: "red" }}>Ignorovano</span>
+          ) : (
+            <Button text="Ignorovat" onClick={() => setName(null)} />
+          )}
         </div>
         <Button
           text="Ok"
-          disabled={!name}
+          disabled={name?.trim() === ""}
           onClick={() => {
             model.rules.push(rule);
             model.store();
