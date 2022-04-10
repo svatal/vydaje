@@ -69,9 +69,16 @@ export function Records() {
               type="text"
               onChange={(newValue) => setSearchString(newValue)}
             ></input>
-          )}
+          )}{" "}
           ({Math.min(allRecords.length, recordsTableMaxLimit)} /{" "}
-          {allRecords.length})
+          {allRecords.length}), castka: +
+          {Math.round(
+            allRecords.reduce((r, c) => r + Math.max(0, c.amount), 0)
+          )}{" "}
+          / -
+          {Math.round(
+            allRecords.reduce((r, c) => r + Math.max(0, -c.amount), 0)
+          )}
         </>
         <RecordsTable
           records={allRecords}
