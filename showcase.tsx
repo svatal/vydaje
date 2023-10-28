@@ -55,7 +55,11 @@ export function Showcase() {
 function updatePathComponent(basketName: string, level: number) {
   return {
     onClick: () => {
-      path = [...path.slice(0, level), basketName];
+      if (level + 1 === path.length && path[path.length -1] == basketName) {
+        path = [...path.slice(0, level)];
+      } else {
+        path = [...path.slice(0, level), basketName];
+      }
       b.invalidate();
       return true;
     },
