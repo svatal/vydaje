@@ -26,7 +26,15 @@ export function Showcase() {
   ] = useDelayed({ from: baseDate, to: lastDate });
   const allBaskets = model.getAllBaskets(from, to);
   const baskets = [allBaskets];
-  path.forEach((p) => baskets.push(baskets[baskets.length - 1].baskets[p]));
+  path.forEach(p => {
+    const nextBasket = baskets[baskets.length - 1].baskets[p];
+    if (nextBasket !== undefined) {
+      baskets.push(nextBasket);
+    }
+  });
+  if (baskets.length <= path.length) {
+    path = path.slice(0, baskets.length - 1);
+  }
   const displayCoef = getSumCoef(displaySum, from, to);
   return (
     <div>
@@ -55,7 +63,7 @@ export function Showcase() {
 function updatePathComponent(basketName: string, level: number) {
   return {
     onClick: () => {
-      if (level + 1 === path.length && path[path.length -1] == basketName) {
+      if (level + 1 === path.length && path[path.length - 1] == basketName) {
         path = [...path.slice(0, level)];
       } else {
         path = [...path.slice(0, level), basketName];
