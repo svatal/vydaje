@@ -103,6 +103,14 @@ export function Rules() {
                 model.store();
               },
             },
+            {
+              label: "Na konec",
+              onClick: () => {
+                model.rules.splice(model.rules.indexOf(contextMenu.rule), 1);
+                model.rules.push(contextMenu.rule);
+                model.store();
+              }
+            },
             ...(contextMenu.rule.bskt
               ? [
                   {
