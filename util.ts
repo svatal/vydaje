@@ -25,7 +25,8 @@ export function formatCurrency(val: number) {
     .match(/.{1,3}/g)!
     .reverse()
     .map((x) => x.split("").reverse().join(""))
-    .join(" ")} Kc`;
+    .join(" ")
+    .replace("- ", "-")} Kc`;
 }
 
 export function leftPad2(x: number) {

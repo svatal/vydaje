@@ -74,6 +74,16 @@ export function renderTimeGraph(
           style={{ textAnchor: "middle" }}
         >
           {id}
+          <title>
+            {names
+              .map((name) => ({
+                name,
+                balance: getBalance(timeBaskets[id].baskets[name]),
+              }))
+              .filter(({ balance }) => balance != 0)
+              .map(({ name, balance }) => `${name}: ${formatCurrency(balance)}`)
+              .join("\n")}
+          </title>
         </text>
       ))}
     </svg>
