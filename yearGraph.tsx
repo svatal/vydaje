@@ -9,10 +9,13 @@ export function renderTimeGraph(
 ) {
   allbaskets = getBasket(path, allbaskets);
   const ids = Object.keys(timeBaskets).sort();
-  timeBaskets = ids.reduce((c, y) => {
-    c[y] = getBasket(path, timeBaskets[y]);
-    return c;
-  }, {} as { [id: string]: IBasketWithRecords });
+  timeBaskets = ids.reduce(
+    (c, y) => {
+      c[y] = getBasket(path, timeBaskets[y]);
+      return c;
+    },
+    {} as { [id: string]: IBasketWithRecords }
+  );
   const names = Object.keys(allbaskets.baskets).sort(
     (a, b) =>
       getBalance(allbaskets.baskets[a]) - getBalance(allbaskets.baskets[b])
@@ -29,10 +32,23 @@ export function renderTimeGraph(
     )
   );
   const maxVal = Math.max(0, ...values.map((v) => v[names.length]));
+  const niceVals = getYLegendValues(maxVal);
 
   return (
-    <>
+    <svg width="100%" height="240px">
+      {niceVals
+        .map((v) => ({ v, y: (v / maxVal) * 200 }))
+        .map(({ v, y }) => (
+          <>
+            <line y1={y} x2="100%" y2={y} stroke="black" />
+            <text x={5} y={y} style={{ textAnchor: "left" }}>
+              {v}
+            </text>
+          </>
+        ))}
       <svg
+        x="0"
+        y="0"
         width="100%"
         height="200px"
         viewBox={`0 0 ${(ids.length + 1) * xStep} ${maxVal}`}
@@ -51,22 +67,23 @@ export function renderTimeGraph(
           </path>
         ))}
       </svg>
-      <svg width="100%" height="40px">
-        {ids.map((id, i) => (
-          <text
-            x={`${(100 / (ids.length + 1)) * (i + 1)}%`}
-            y={20 + (i % 2 === 0 || ids.length <= 20 ? 0 : 20)}
-            style={{ textAnchor: "middle" }}
-          >
-            {id}
-          </text>
-        ))}
-      </svg>
-    </>
+      {ids.map((id, i) => (
+        <text
+          x={`${(100 / (ids.length + 1)) * (i + 1)}%`}
+          y={220 + (i % 2 === 0 || ids.length <= 20 ? 0 : 20)}
+          style={{ textAnchor: "middle" }}
+        >
+          {id}
+        </text>
+      ))}
+    </svg>
   );
 }
 
-function getBasket(path: string[], root: IBasketWithRecords): IBasketWithRecords {
+function getBasket(
+  path: string[],
+  root: IBasketWithRecords
+): IBasketWithRecords {
   if (path.length === 0) return root;
   const basket = root.baskets[path[0]];
   if (basket === undefined)
@@ -98,4 +115,21 @@ function getPath(i: number, values: number[][]) {
       .join(" ") +
     ` Z`
   );
+}
+
+function getYLegendValues(maxVal: number) {
+  const log = Math.floor(Math.log10(maxVal));
+  const baseStep = Math.pow(10, log - 1);
+  let step = baseStep;
+  for (const m of [1, 2, 5, 10, 20, 50]) {
+    step = m * baseStep;
+    if (maxVal / step < 10) break;
+  }
+  const niceVals: number[] = [];
+  let c = 0;
+  while (c < maxVal) {
+    niceVals.push(c);
+    c += step;
+  }
+  return niceVals;
 }
