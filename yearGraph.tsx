@@ -16,28 +16,41 @@ export function renderTimeGraph(
     },
     {} as { [id: string]: IBasketWithRecords }
   );
-  const names = Object.keys(allbaskets.baskets).sort(
-    (a, b) =>
-      getBalance(allbaskets.baskets[a]) - getBalance(allbaskets.baskets[b])
+  const malusNames = sortBasketNamesBy(allbaskets, getMalus);
+  const bonusNames = sortBasketNamesBy(allbaskets, getBonus);
+  const colorNames = sortBasketNamesBy(allbaskets, getBalance);
+
+  function getValues(
+    names: string[],
+    fn: (basket: IBasketWithRecords | undefined) => number
+  ) {
+    return ids.map((id) =>
+      names.reduce(
+        (c, n) => {
+          c.push(c[c.length - 1] + Math.round(fn(timeBaskets[id].baskets[n])));
+          return c;
+        },
+        [0]
+      )
+    );
+  }
+  const malusValues = getValues(malusNames, getMalus);
+  const maxMalusVal = Math.min(
+    0,
+    ...malusValues.map((v) => v[malusNames.length])
   );
-  const values = ids.map((id) =>
-    names.reduce(
-      (c, n) => {
-        c.push(
-          c[c.length - 1] + Math.round(getMalus(timeBaskets[id].baskets[n]))
-        );
-        return c;
-      },
-      [0]
-    )
+  const bonusValues = getValues(bonusNames, getBonus);
+  const maxBonusVal = Math.max(
+    0,
+    ...bonusValues.map((v) => v[bonusNames.length])
   );
-  const maxVal = Math.max(0, ...values.map((v) => v[names.length]));
-  const niceVals = getYLegendValues(maxVal);
+  const niceVals = getYLegendValues(maxBonusVal, maxMalusVal);
+  const valRange = maxBonusVal - maxMalusVal;
 
   return (
     <svg width="100%" height="240px">
       {niceVals
-        .map((v) => ({ v, y: (v / maxVal) * 200 }))
+        .map((v) => ({ v, y: ((maxBonusVal - v) / valRange) * 200 }))
         .map(({ v, y }) => (
           <>
             <line y1={y} x2="100%" y2={y} stroke="black" />
@@ -51,16 +64,28 @@ export function renderTimeGraph(
         y="0"
         width="100%"
         height="200px"
-        viewBox={`0 0 ${(ids.length + 1) * xStep} ${maxVal}`}
+        viewBox={`0 ${-maxBonusVal} ${(ids.length + 1) * xStep} ${valRange}`}
         preserveAspectRatio="none"
       >
-        {names.map((n, i) => (
-          <path fill={getColor(n, names)} d={getPath(i, values)}>
+        {bonusNames.map((n, i) => (
+          <path fill={getColor(n, colorNames)} d={getPath(i, bonusValues)}>
             <title>{`${n}\n${ids
               .map(
                 (y) =>
                   `${y} - ${formatCurrency(
-                    -getBalance(timeBaskets[y].baskets[n])
+                    getBalance(timeBaskets[y].baskets[n])
+                  )}`
+              )
+              .join("\n")}`}</title>
+          </path>
+        ))}
+        {malusNames.map((n, i) => (
+          <path fill={getColor(n, colorNames)} d={getPath(i, malusValues)}>
+            <title>{`${n}\n${ids
+              .map(
+                (y) =>
+                  `${y} - ${formatCurrency(
+                    getBalance(timeBaskets[y].baskets[n])
                   )}`
               )
               .join("\n")}`}</title>
@@ -75,12 +100,21 @@ export function renderTimeGraph(
         >
           {id}
           <title>
-            {names
-              .map((name) => ({
-                name,
-                balance: getBalance(timeBaskets[id].baskets[name]),
-              }))
-              .filter(({ balance }) => balance != 0)
+            {[
+              ...bonusNames
+                .map((name) => ({
+                  name,
+                  balance: getBalance(timeBaskets[id].baskets[name]),
+                }))
+                .filter(({ balance }) => balance > 0)
+                .reverse(),
+              ...malusNames
+                .map((name) => ({
+                  name,
+                  balance: getBalance(timeBaskets[id].baskets[name]),
+                }))
+                .filter(({ balance }) => balance < 0),
+            ]
               .map(({ name, balance }) => `${name}: ${formatCurrency(balance)}`)
               .join("\n")}
           </title>
@@ -105,14 +139,19 @@ function getBalance(basket: IBasketWithRecords | undefined) {
   if (!basket) return 0;
   return basket.plus + basket.minus;
 }
+
 function getMalus(basket: IBasketWithRecords | undefined) {
-  return Math.max(0, -getBalance(basket));
+  return Math.min(0, getBalance(basket));
+}
+
+function getBonus(basket: IBasketWithRecords | undefined) {
+  return Math.max(0, getBalance(basket));
 }
 
 const xStep = 100;
 function getPath(i: number, values: number[][]) {
-  const lower = values.map((vs) => vs[i]);
-  const upper = values.map((vs) => vs[i + 1]);
+  const lower = values.map((vs) => -vs[i]);
+  const upper = values.map((vs) => -vs[i + 1]);
   return (
     `M ${xStep},${lower[0]}` +
     lower
@@ -127,19 +166,34 @@ function getPath(i: number, values: number[][]) {
   );
 }
 
-function getYLegendValues(maxVal: number) {
-  const log = Math.floor(Math.log10(maxVal));
+function getYLegendValues(maxBonusVal: number, maxMalusVal: number) {
+  const range = maxBonusVal - maxMalusVal;
+  const log = Math.floor(Math.log10(range));
   const baseStep = Math.pow(10, log - 1);
   let step = baseStep;
   for (const m of [1, 2, 5, 10, 20, 50]) {
     step = m * baseStep;
-    if (maxVal / step < 10) break;
+    if (range / step < 15) break;
   }
   const niceVals: number[] = [];
   let c = 0;
-  while (c < maxVal) {
+  while (c >= maxMalusVal) {
     niceVals.push(c);
-    c += step;
+    c -= step;
+  }
+  c = 0;
+  while ((c += step) < maxBonusVal) {
+    niceVals.unshift(c);
   }
   return niceVals;
+}
+
+function sortBasketNamesBy(
+  allbaskets: IBasketWithRecords,
+  fn: (basket: IBasketWithRecords | undefined) => number
+) {
+  return Object.keys(allbaskets.baskets).sort(
+    (a, b) =>
+      Math.abs(fn(allbaskets.baskets[b])) - Math.abs(fn(allbaskets.baskets[a]))
+  );
 }
