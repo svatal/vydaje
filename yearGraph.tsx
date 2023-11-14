@@ -1,12 +1,18 @@
 import * as b from "bobril";
 import { IBasketWithRecords } from "./model/rule";
 import { getColor, formatCurrency } from "./util";
+import { ExpandIcon } from "./icons/expand";
+import { Icon } from "./icons/icon";
+import { FullScreenModal } from "./components/fullScreenModal";
+import { CloseIcon } from "./icons/close";
 
-export function renderTimeGraph(
-  allbaskets: IBasketWithRecords,
-  timeBaskets: { [id: string]: IBasketWithRecords },
-  path: string[]
-) {
+export function TimeGraph(p: {
+  allBaskets: IBasketWithRecords;
+  timeBaskets: { [id: string]: IBasketWithRecords };
+  path: string[];
+}) {
+  let { allBaskets: allbaskets, timeBaskets, path } = p;
+  const inModal = b.useState(false);
   allbaskets = getBasket(path, allbaskets);
   const ids = Object.keys(timeBaskets).sort();
   timeBaskets = ids.reduce(
@@ -47,80 +53,104 @@ export function renderTimeGraph(
   const niceVals = getYLegendValues(maxBonusVal, maxMalusVal);
   const valRange = maxBonusVal - maxMalusVal;
 
-  return (
-    <svg width="100%" height="240px">
-      {niceVals
-        .map((v) => ({ v, y: ((maxBonusVal - v) / valRange) * 200 }))
-        .map(({ v, y }) => (
-          <>
-            <line y1={y} x2="100%" y2={y} stroke="black" />
-            <text x={5} y={y} style={{ textAnchor: "left" }}>
-              {v}
-            </text>
-          </>
-        ))}
-      <svg
-        x="0"
-        y="0"
-        width="100%"
-        height="200px"
-        viewBox={`0 ${-maxBonusVal} ${(ids.length + 1) * xStep} ${valRange}`}
-        preserveAspectRatio="none"
-      >
-        {bonusNames.map((n, i) => (
-          <path fill={getColor(n, colorNames)} d={getPath(i, bonusValues)}>
-            <title>{`${n}\n${ids
-              .map(
-                (y) =>
-                  `${y} - ${formatCurrency(
-                    getBalance(timeBaskets[y].baskets[n])
-                  )}`
-              )
-              .join("\n")}`}</title>
-          </path>
-        ))}
-        {malusNames.map((n, i) => (
-          <path fill={getColor(n, colorNames)} d={getPath(i, malusValues)}>
-            <title>{`${n}\n${ids
-              .map(
-                (y) =>
-                  `${y} - ${formatCurrency(
-                    getBalance(timeBaskets[y].baskets[n])
-                  )}`
-              )
-              .join("\n")}`}</title>
-          </path>
+  const content = (
+    <>
+      <svg style={{ width: "100%", height: "calc(100% - 40px)" }}>
+        {niceVals
+          .map((v) => ({ v, y: `${((maxBonusVal - v) / valRange) * 100}%` }))
+          .map(({ v, y }) => (
+            <>
+              <line y1={y} x2="100%" y2={y} stroke="black" />
+              <text x={5} y={y} style={{ textAnchor: "left" }}>
+                {v}
+              </text>
+            </>
+          ))}
+        <svg
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          viewBox={`0 ${-maxBonusVal} ${(ids.length + 1) * xStep} ${valRange}`}
+          preserveAspectRatio="none"
+        >
+          {bonusNames.map((n, i) => (
+            <path fill={getColor(n, colorNames)} d={getPath(i, bonusValues)}>
+              <title>{`${n}\n${ids
+                .map(
+                  (y) =>
+                    `${y} - ${formatCurrency(
+                      getBalance(timeBaskets[y].baskets[n])
+                    )}`
+                )
+                .join("\n")}`}</title>
+            </path>
+          ))}
+          {malusNames.map((n, i) => (
+            <path fill={getColor(n, colorNames)} d={getPath(i, malusValues)}>
+              <title>{`${n}\n${ids
+                .map(
+                  (y) =>
+                    `${y} - ${formatCurrency(
+                      getBalance(timeBaskets[y].baskets[n])
+                    )}`
+                )
+                .join("\n")}`}</title>
+            </path>
+          ))}
+        </svg>
+        <g style={{ transform: "translateX(100%)" }}>
+          <Icon
+            x="-20"
+            y="0"
+            size={20}
+            icon={inModal() ? CloseIcon : ExpandIcon}
+            onClick={() => inModal(!inModal())}
+          />
+        </g>
+      </svg>
+      <svg style={{ width: "100%", height: "40px" }}>
+        {ids.map((id, i) => (
+          <text
+            x={`${(100 / (ids.length + 1)) * (i + 1)}%`}
+            y={20 + (i % 2 === 0 || ids.length <= 20 ? 0 : 20)}
+            style={{ textAnchor: "middle" }}
+          >
+            {id}
+            <title>
+              {[
+                ...bonusNames
+                  .map((name) => ({
+                    name,
+                    balance: getBalance(timeBaskets[id].baskets[name]),
+                  }))
+                  .filter(({ balance }) => balance > 0)
+                  .reverse(),
+                ...malusNames
+                  .map((name) => ({
+                    name,
+                    balance: getBalance(timeBaskets[id].baskets[name]),
+                  }))
+                  .filter(({ balance }) => balance < 0),
+              ]
+                .map(
+                  ({ name, balance }) => `${name}: ${formatCurrency(balance)}`
+                )
+                .join("\n")}
+            </title>
+          </text>
         ))}
       </svg>
-      {ids.map((id, i) => (
-        <text
-          x={`${(100 / (ids.length + 1)) * (i + 1)}%`}
-          y={220 + (i % 2 === 0 || ids.length <= 20 ? 0 : 20)}
-          style={{ textAnchor: "middle" }}
-        >
-          {id}
-          <title>
-            {[
-              ...bonusNames
-                .map((name) => ({
-                  name,
-                  balance: getBalance(timeBaskets[id].baskets[name]),
-                }))
-                .filter(({ balance }) => balance > 0)
-                .reverse(),
-              ...malusNames
-                .map((name) => ({
-                  name,
-                  balance: getBalance(timeBaskets[id].baskets[name]),
-                }))
-                .filter(({ balance }) => balance < 0),
-            ]
-              .map(({ name, balance }) => `${name}: ${formatCurrency(balance)}`)
-              .join("\n")}
-          </title>
-        </text>
-      ))}
-    </svg>
+    </>
+  );
+  return inModal() ? (
+    <div key="modal">
+      <FullScreenModal>{content}</FullScreenModal>
+    </div>
+  ) : (
+    <div key="inline" style={{ height: 240 }}>
+      {content}
+    </div>
   );
 }
 

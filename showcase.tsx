@@ -2,7 +2,7 @@ import * as b from "bobril";
 import { model } from "./model/model";
 import { renderBasket } from "./basketPie";
 import { renderRecordsTable } from "./recordsTable";
-import { renderTimeGraph } from "./yearGraph";
+import { TimeGraph } from "./yearGraph";
 import { safeGet } from "./util";
 import { DateRangePicker } from "./components/dateRangePicker";
 import { useDelayed } from "./hooks";
@@ -19,14 +19,11 @@ let path: string[] = [];
 export function Showcase() {
   const baseDate = safeGet(model.records, 0)?.date;
   const lastDate = safeGet(model.records, model.records.length - 1)?.date;
-  const [
-    { from, to },
-    setTimeRange,
-    { from: earlyFrom, to: earlyTo },
-  ] = useDelayed({ from: baseDate, to: lastDate });
+  const [{ from, to }, setTimeRange, { from: earlyFrom, to: earlyTo }] =
+    useDelayed({ from: baseDate, to: lastDate });
   const allBaskets = model.getAllBaskets(from, to);
   const baskets = [allBaskets];
-  path.forEach(p => {
+  path.forEach((p) => {
     const nextBasket = baskets[baskets.length - 1].baskets[p];
     if (nextBasket !== undefined) {
       baskets.push(nextBasket);
@@ -50,11 +47,22 @@ export function Showcase() {
       {baskets.map((b, i) =>
         renderBasket(b, i, path, updatePathComponent, displayCoef)
       )}
+
+      <div style={{ clear: "both" }} />
       {from &&
         to &&
-        to.getTime() - from.getTime() >= 1000 * 60 * 60 * 24 * 365 * 2 &&
-        renderTimeGraph(allBaskets, model.getYearBaskets(from, to), path)}
-      {renderTimeGraph(allBaskets, model.getMonthBaskets(from, to), path)}
+        to.getTime() - from.getTime() >= 1000 * 60 * 60 * 24 * 365 * 2 && (
+          <TimeGraph
+            allBaskets={allBaskets}
+            timeBaskets={model.getYearBaskets(from, to)}
+            path={path}
+          />
+        )}
+      <TimeGraph
+        allBaskets={allBaskets}
+        timeBaskets={model.getMonthBaskets(from, to)}
+        path={path}
+      />
       {renderRecordsTable(baskets[baskets.length - 1])}
     </div>
   );
