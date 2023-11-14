@@ -16,9 +16,9 @@ export function renderTimeGraph(
     },
     {} as { [id: string]: IBasketWithRecords }
   );
-  const malusNames = sortBasketNamesBy(allbaskets, getMalus);
+  const malusNames = sortBasketNamesBy(allbaskets, getMalus).reverse();
   const bonusNames = sortBasketNamesBy(allbaskets, getBonus);
-  const colorNames = sortBasketNamesBy(allbaskets, getBalance);
+  const colorNames = sortBasketNamesBy(allbaskets, getBalance).reverse();
 
   function getValues(
     names: string[],
@@ -193,7 +193,6 @@ function sortBasketNamesBy(
   fn: (basket: IBasketWithRecords | undefined) => number
 ) {
   return Object.keys(allbaskets.baskets).sort(
-    (a, b) =>
-      Math.abs(fn(allbaskets.baskets[b])) - Math.abs(fn(allbaskets.baskets[a]))
+    (a, b) => fn(allbaskets.baskets[b]) - fn(allbaskets.baskets[a])
   );
 }
