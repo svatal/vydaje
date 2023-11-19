@@ -11,9 +11,9 @@ export function TimeGraph(p: {
   timeBaskets: { [id: string]: IBasketWithRecords };
   path: string[];
 }) {
-  let { allBaskets: allbaskets, timeBaskets, path } = p;
+  let { allBaskets: allBaskets, timeBaskets, path } = p;
   const inModal = b.useState(false);
-  allbaskets = getBasket(path, allbaskets);
+  allBaskets = getBasket(path, allBaskets);
   const ids = Object.keys(timeBaskets).sort();
   timeBaskets = ids.reduce(
     (c, y) => {
@@ -22,9 +22,9 @@ export function TimeGraph(p: {
     },
     {} as { [id: string]: IBasketWithRecords }
   );
-  const malusNames = sortBasketNamesBy(allbaskets, getMalus).reverse();
-  const bonusNames = sortBasketNamesBy(allbaskets, getBonus);
-  const colorNames = sortBasketNamesBy(allbaskets, getBalance).reverse();
+  const malusNames = sortBasketNamesBy(allBaskets, getMalus).reverse();
+  const bonusNames = sortBasketNamesBy(allBaskets, getBonus);
+  const colorNames = sortBasketNamesBy(allBaskets, getBalance).reverse();
 
   function getValues(
     names: string[],
@@ -158,6 +158,8 @@ function getBasket(
   const basket = root.baskets[path[0]];
   if (basket === undefined)
     return { baskets: {}, records: [], plus: 0, minus: 0 };
+  if (Object.keys(basket.baskets).length === 0)
+    return { ...basket, baskets: { [path[0]]: basket } }; // basket is leaf - display itself
   return getBasket(path.slice(1), basket);
 }
 
@@ -201,11 +203,10 @@ function getYLegendValues(maxBonusVal: number, maxMalusVal: number) {
     step = m * baseStep;
     if (range / step < 15) break;
   }
-  const niceVals: number[] = [];
+  const niceVals: number[] = [0];
   let c = 0;
-  while (c >= maxMalusVal) {
+  while ((c -= step) > maxMalusVal) {
     niceVals.push(c);
-    c -= step;
   }
   c = 0;
   while ((c += step) < maxBonusVal) {
