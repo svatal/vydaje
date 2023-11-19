@@ -144,13 +144,9 @@ export function TimeGraph(p: {
     </>
   );
   return inModal() ? (
-    <div key="modal">
-      <FullScreenModal>{content}</FullScreenModal>
-    </div>
+    <FullScreenModal>{content}</FullScreenModal>
   ) : (
-    <div key="inline" style={{ height: 240 }}>
-      {content}
-    </div>
+    <div style={{ height: 240 }}>{content}</div>
   );
 }
 
